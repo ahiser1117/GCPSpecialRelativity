@@ -1,0 +1,97 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel RenderGraph
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> _Result;
+RWStructuredBuffer<uint2> _Objects;
+RWStructuredBuffer<float4> _ObjColors;
+RWStructuredBuffer<float3> _Events;
+
+uint _Width;
+uint _Height;
+uint _NumObjects;
+int _Thickness;
+float _CircleRadius;
+
+void ClearGraph(uint3 id){
+    _Result[id.xy] = float4(0.55, 0.55, 0.55, 1.0);
+}
+
+void BaseGraph(uint3 id){
+    int xPos = id.x - _Width/2;
+    int yPos = id.y - _Height/2;
+
+    // X and Y Axies
+    if((xPos > -_Thickness && xPos < _Thickness) || 
+    (yPos > -_Thickness && yPos < _Thickness)){
+        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
+    }
+
+    // Lighter grid aligned with Y-Axis
+    if((xPos > 0 && (xPos + _Thickness * 2) % 25 < _Thickness ||
+        (xPos < 0 && (-xPos + _Thickness * 2) % 25 < _Thickness))){
+        _Result[id.xy] = float4(0.65, 0.65, 0.65, 1.0);
+    }
+
+    // Lighter grid aligned with X-Axis
+    if((yPos > 0 && (yPos + _Thickness * 2) % 25 < _Thickness) ||
+        (yPos < 0 && (-yPos + _Thickness * 2) % 25 < _Thickness)){
+        _Result[id.xy] = float4(0.65, 0.65, 0.65, 1.0);
+    }
+
+    // X-Axis tick marks
+    if((xPos > 0 && (xPos + _Thickness * 2) % 25 < _Thickness && (yPos > -10 && yPos < 10)) ||
+        (xPos < 0 && (-xPos + _Thickness * 2) % 25 < _Thickness && (yPos > -10 && yPos < 10))){
+        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
+    }
+
+    // Y-Axis tick marks
+    if((yPos > 0 && (yPos + _Thickness * 2) % 25 < _Thickness && (xPos > -10 && xPos < 10)) ||
+        (yPos < 0 && (-yPos + _Thickness * 2) % 25 < _Thickness && (xPos > -10 && xPos < 10))){
+        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
+    }
+}
+
+void DrawEvents(uint3 id){
+    int xPos = id.x - _Width/2;
+    int yPos = id.y - _Height/2;
+
+    for(uint j = 0; j < _NumObjects; j++){
+        for(uint i = _Objects[j].x; i < _Objects[j].y; i++){
+
+            float2 vec1 = float2(_Events[i+1].x-_Events[i].x, _Events[i+1].y-_Events[i].y);
+            float2 vec2 = float2(xPos-_Events[i].x, yPos-_Events[i].y);
+
+            float beta = (vec1.x / vec1.y);
+
+            float cross = abs(vec1.x * vec2.y - vec1.y * vec2.x);
+            float dot = vec1.x * vec2.x + vec1.y * vec2.y;
+            float gamma = 25 / sqrt(1 - pow(beta,2));
+
+            float vec1Mag = sqrt(vec1.x * vec1.x + vec1.y * vec1.y);
+
+            float dotOverVec1 = dot / vec1Mag;
+
+            if(0 < (dotOverVec1 / vec1Mag) && (dotOverVec1 / vec1Mag) < 1){
+                if((cross / vec1Mag < _Thickness) || (cross / vec1Mag < 5 * _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma < _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma > -_Thickness)){
+                    _Result[id.xy] = float4(0, 0.9, 0.9, 1.0);
+                }
+            }
+        }
+    }
+}
+
+
+
+[numthreads(8,8,1)]
+void RenderGraph (uint3 id : SV_DispatchThreadID)
+{
+    if(id.x < _Width && id.y < _Height){
+        ClearGraph(id);
+        BaseGraph(id);
+        DrawEvents(id);
+    }
+    
+
+}
