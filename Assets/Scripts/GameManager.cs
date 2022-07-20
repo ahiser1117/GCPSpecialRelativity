@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public float currentTime = 0;
     public List<ObjectPanel> objects;
     public List<Vector2Int> objectsIdx;
+    public List<Color> objectColors;
     public List<Vector3> events;
     public Graph graph;
     public GameObject ObjectPanelPrefab;
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour
         ObjectPanel newPanel = Instantiate(ObjectPanelPrefab, Vector3.zero, Quaternion.identity, ObjectContentPanel).GetComponent<ObjectPanel>();
         objects.Add(newPanel);
         objectsIdx.Add(new Vector2Int(events.Count, events.Count));
+        objectColors.Add(newPanel.color);
         newPanel.gm = this;
         newPanel.ConfirmName();
         
@@ -56,6 +58,9 @@ public class GameManager : MonoBehaviour
                     obj.eventPanels[i].position.text = (gamma * (oldEvent.x - betaLerp * oldEvent.y)).ToString("0.0");
                     //Debug.Log("Event Updated (" + oldEvent.x + ", " + oldEvent.y + ") => (" + obj.eventPanels[i].position.text + ", " + obj.eventPanels[i].time.text + ")");
                     obj.eventPanels[i].EventUpdated(false);
+                }
+                if(transitionProgress >= 1){
+                    obj.GenerateIntervals();
                 }
             }
             UpdateGraph();

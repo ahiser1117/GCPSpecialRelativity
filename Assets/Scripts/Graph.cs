@@ -6,14 +6,19 @@ using UnityEngine.UI;
 public class Graph : MonoBehaviour
 {
 
-    public Vector3 originOffset;
+    public Color backgroundColor;
+    public Color minorGridColor;
+    public Color majorGridColor;
+    public Color invalidWorldLine;
+
+
+    public Vector3Int originOffset;
 
     GameManager gm;
 
     [SerializeField] int thickness;
     [SerializeField] int maxEvents;
     [SerializeField] int maxObjects;
-    [SerializeField] float circleRadius;
 
     [SerializeField] RawImage img;
     [SerializeField] ComputeShader shader;
@@ -49,11 +54,17 @@ public class Graph : MonoBehaviour
     public void UpdateGraph(){
         eventBuffer.SetData(gm.events);
         objectBuffer.SetData(gm.objectsIdx);
+        objColorBuffer.SetData(gm.objectColors);
         shader.SetInt("_Width", width);
         shader.SetInt("_Height", height);
         shader.SetInt("_Thickness", thickness);
         shader.SetInt("_NumObjects", gm.objects.Count);
-        shader.SetFloat("_CircleRadius", circleRadius);
+        shader.SetInt("_xOffset", originOffset.x);
+        shader.SetInt("_yOffset", originOffset.y);
+        shader.SetVector("_BackgroundColor", backgroundColor);
+        shader.SetVector("_MinorGridColor", minorGridColor);
+        shader.SetVector("_MajorGridColor", majorGridColor);
+        shader.SetVector("_InvalidWorldLine", invalidWorldLine);
         int kernelHandle = shader.FindKernel("RenderGraph");
         if(tex != null){
             Destroy(tex);
@@ -63,6 +74,7 @@ public class Graph : MonoBehaviour
         tex.Create();
 
         shader.SetBuffer(kernelHandle, "_Objects", objectBuffer);
+        shader.SetBuffer(kernelHandle, "_ObjColors", objColorBuffer);
         shader.SetBuffer(kernelHandle, "_Events", eventBuffer);
         shader.SetTexture(kernelHandle, "_Result", tex);
 
@@ -77,5 +89,21 @@ public class Graph : MonoBehaviour
         result.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
         result.Apply();
         img.texture = result;
+    }
+
+    Vector3 mouseInit;
+    Vector3 oldPosition;
+
+    void Update(){
+        if(Input.GetMouseButtonDown(1)){
+            mouseInit = gm.cam.ScreenToWorldPoint(Input.mousePosition);
+            oldPosition = originOffset;
+        } else if(Input.GetMouseButton(1)){
+            originOffset = Vector3Int.CeilToInt(oldPosition + gm.cam.ScreenToWorldPoint(Input.mousePosition) - mouseInit);
+            foreach(ObjectPanel obj in gm.objects){
+                obj.MoveFromGridDrag();
+            }
+            UpdateGraph();
+        }
     }
 }

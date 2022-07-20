@@ -12,50 +12,57 @@ uint _Width;
 uint _Height;
 uint _NumObjects;
 int _Thickness;
-float _CircleRadius;
+int _xOffset;
+int _yOffset;
+
+float4 _BackgroundColor;
+float4 _MinorGridColor;
+float4 _MajorGridColor;
+float4 _InvalidWorldLine;
 
 void ClearGraph(uint3 id){
-    _Result[id.xy] = float4(0.55, 0.55, 0.55, 1.0);
+    _Result[id.xy] = _BackgroundColor;
 }
 
 void BaseGraph(uint3 id){
-    int xPos = id.x - _Width/2;
-    int yPos = id.y - _Height/2;
+    int xPos = id.x - _Width/2 - _xOffset;
+    int yPos = id.y - _Height/2 - _yOffset;
 
-    // X and Y Axies
-    if((xPos > -_Thickness && xPos < _Thickness) || 
-    (yPos > -_Thickness && yPos < _Thickness)){
-        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
-    }
 
     // Lighter grid aligned with Y-Axis
     if((xPos > 0 && (xPos + _Thickness * 2) % 25 < _Thickness ||
         (xPos < 0 && (-xPos + _Thickness * 2) % 25 < _Thickness))){
-        _Result[id.xy] = float4(0.65, 0.65, 0.65, 1.0);
+        _Result[id.xy] = _MinorGridColor;
     }
 
     // Lighter grid aligned with X-Axis
     if((yPos > 0 && (yPos + _Thickness * 2) % 25 < _Thickness) ||
         (yPos < 0 && (-yPos + _Thickness * 2) % 25 < _Thickness)){
-        _Result[id.xy] = float4(0.65, 0.65, 0.65, 1.0);
+        _Result[id.xy] = _MinorGridColor;
+    }
+
+    // X and Y Axies
+    if((xPos > -_Thickness && xPos < _Thickness) || 
+    (yPos > -_Thickness && yPos < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
     }
 
     // X-Axis tick marks
-    if((xPos > 0 && (xPos + _Thickness * 2) % 25 < _Thickness && (yPos > -10 && yPos < 10)) ||
-        (xPos < 0 && (-xPos + _Thickness * 2) % 25 < _Thickness && (yPos > -10 && yPos < 10))){
-        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
+    if((xPos > 0 && (yPos > -10 && yPos < 10) && (xPos + _Thickness * 2) % 100 < _Thickness) ||
+        (xPos < 0 && (yPos > -10 && yPos < 10) && (-xPos + _Thickness * 2) % 100 < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
     }
 
     // Y-Axis tick marks
-    if((yPos > 0 && (yPos + _Thickness * 2) % 25 < _Thickness && (xPos > -10 && xPos < 10)) ||
-        (yPos < 0 && (-yPos + _Thickness * 2) % 25 < _Thickness && (xPos > -10 && xPos < 10))){
-        _Result[id.xy] = float4(0.9, 0.9, 0.9, 1.0);
+    if((yPos > 0 && (xPos > -10 && xPos < 10) && (yPos + _Thickness * 2) % 100 < _Thickness) ||
+        (yPos < 0 && (xPos > -10 && xPos < 10) && (-yPos + _Thickness * 2) % 100 < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
     }
 }
 
 void DrawEvents(uint3 id){
-    int xPos = id.x - _Width/2;
-    int yPos = id.y - _Height/2;
+    int xPos = id.x - _Width/2 - _xOffset;
+    int yPos = id.y - _Height/2 - _yOffset;
 
     for(uint j = 0; j < _NumObjects; j++){
         for(uint i = _Objects[j].x; i < _Objects[j].y; i++){
@@ -74,8 +81,12 @@ void DrawEvents(uint3 id){
             float dotOverVec1 = dot / vec1Mag;
 
             if(0 < (dotOverVec1 / vec1Mag) && (dotOverVec1 / vec1Mag) < 1){
-                if((cross / vec1Mag < _Thickness) || (cross / vec1Mag < 5 * _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma < _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma > -_Thickness)){
-                    _Result[id.xy] = float4(0, 0.9, 0.9, 1.0);
+                if((cross / vec1Mag < _Thickness) || (abs(beta) < 1 && cross / vec1Mag < 5 * _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma < _Thickness && (dotOverVec1 + 2 * _Thickness) % gamma > -_Thickness)){
+                    if(abs(beta) > 1){
+                        _Result[id.xy] = _InvalidWorldLine;
+                    } else{
+                        _Result[id.xy] = _ObjColors[j];
+                    }
                 }
             }
         }

@@ -22,6 +22,7 @@ public class EventPoint : MonoBehaviour
 
     void OnMouseUp(){
         isDragged = false;
+        eventPanel.objPanel.GenerateIntervals();
     }
 
     void Update()
@@ -29,7 +30,7 @@ public class EventPoint : MonoBehaviour
         if(isDragged){
             dragOffset = cam.ScreenToWorldPoint(Input.mousePosition) - mouseOnDrag;
             transform.position = onDragPosition + dragOffset;
-            eventPoint = new Vector2(transform.position.x-150, transform.position.y);
+            eventPoint = new Vector2(transform.position.x-150 - GameManager.instance.graph.originOffset.x, transform.position.y - GameManager.instance.graph.originOffset.y);
             eventPanel.UpdateFromDrag(eventPoint.x, eventPoint.y);
         }
         
@@ -37,7 +38,11 @@ public class EventPoint : MonoBehaviour
 
     public void UpdateFromInput(float pos, float t){
         eventPoint = new Vector2(pos, t);
-        transform.position = new Vector3(pos+150, t, transform.position.z);
+        transform.position = new Vector3(pos+150 + GameManager.instance.graph.originOffset.x, t + GameManager.instance.graph.originOffset.y, transform.position.z);
+    }
+
+    public void UpdateFromGridDrag(){
+        transform.position = new Vector3(eventPoint.x+150 + GameManager.instance.graph.originOffset.x, eventPoint.y + GameManager.instance.graph.originOffset.y, transform.position.z);
     }
 
 }

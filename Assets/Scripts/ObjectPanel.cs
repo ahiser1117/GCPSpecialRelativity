@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using TMPro;
+using UnityEngine.UI;
 
 public class ObjectPanel : MonoBehaviour
 {
 
     public TMP_InputField Name; 
+    public Color color;
     public Transform EventContentPanel; // Where Event Panels are in heirarchy
     public GameObject EventPanelPrefab;
     public GameObject EventPointPrefab;
@@ -16,6 +18,7 @@ public class ObjectPanel : MonoBehaviour
     [HideInInspector] public GameManager gm;
 
     public List<EventPanel> eventPanels;
+    public List<Interval> intervals;
 
     void Start(){
         eventPanels = new List<EventPanel>();
@@ -28,6 +31,7 @@ public class ObjectPanel : MonoBehaviour
         eventPanels.Add(newEventPanel);
         newEventPanel.gm = gm;
         newEventPanel.eventPoint = newEventPoint;
+        newEventPoint.GetComponent<SpriteRenderer>().color = color;
         newEventPanel.gameObject.name = "EventPanel" + eventPanels.Count;
         newEventPoint.eventPanel = newEventPanel;
         newEventPoint.cam = gm.cam;
@@ -43,6 +47,9 @@ public class ObjectPanel : MonoBehaviour
     public void ConfirmName(){
         if(Name.text == ""){
             Name.text = "Object " + (gm.objects.IndexOf(this) + 1);
+        }
+        foreach(Interval intv in intervals){
+            intv.nameText.text = Name.text;
         }
     }
 
@@ -71,21 +78,41 @@ public class ObjectPanel : MonoBehaviour
         }
     }
 
-    void GenerateIntervals(){
+    public void GenerateIntervals(){
         // Create implementation
+        while(intervals.Count > 0){
+            Interval remove = intervals[0];
+            intervals.Remove(remove);
+            Destroy(remove.gameObject);
+        }
+        for(int i = 0; eventPanels.Count > 1 && i < eventPanels.Count-1; i++){
+            Interval newInterval = Instantiate(IntervalPrefab, Vector3.zero, Quaternion.identity).GetComponent<Interval>();
+            intervals.Add(newInterval);
+            newInterval.from = eventPanels[i].eventPoint;
+            newInterval.to = eventPanels[i+1].eventPoint;
+            newInterval.UpdateCollider();
+            newInterval.nameText.text = Name.text;
+        }
     }
 
     public void DeleteObj(){ // Delete this object panel
         while(eventPanels.Count > 0){
             eventPanels[0].DeleteEvent(0);
         }
+        while(intervals.Count > 0){
+            Interval remove = intervals[0];
+            intervals.Remove(remove);
+            Destroy(remove.gameObject);
+        }
         int idx = gm.objects.IndexOf(this);
         gm.objectsIdx.RemoveAt(idx);
+        gm.objectColors.RemoveAt(idx);
         for(int i = 0; i < gm.events.Count; i++){
             if(gm.events[i].z > idx)
                 gm.events[i] = gm.events[i] - Vector3.forward;
         }
         gm.objects.Remove(this);
+        gm.UpdateGraph();
         Destroy(this.gameObject);
     }
 
@@ -103,7 +130,11 @@ public class ObjectPanel : MonoBehaviour
         } else if(minIdx > 0 && Convert.ToSingle(eventPanels[minIdx].time.text) - gm.currentTime > 0){
             beta = (Convert.ToSingle(eventPanels[minIdx].position.text) - Convert.ToSingle(eventPanels[minIdx-1].position.text)) / 
                     (Convert.ToSingle(eventPanels[minIdx].time.text) - Convert.ToSingle(eventPanels[minIdx-1].time.text));
-        } 
+        }
+        if(beta > 1){
+            Debug.Log("Cannot switch to Super-Luminal Reference Frame");
+            return;
+        }
         
 
         foreach(ObjectPanel obj in gm.objects){
@@ -113,8 +144,24 @@ public class ObjectPanel : MonoBehaviour
         }
         gm.beta = beta;
         gm.transitionProgress = 0;
-
     }
 
+    public void ChangeColor(Color newColor){
+        color = newColor;
+        gm.objectColors[gm.objects.IndexOf(this)] = color;
+        foreach(EventPanel evt in eventPanels){
+            evt.eventPoint.GetComponent<SpriteRenderer>().color = color;
+        }
+        gm.UpdateGraph();
+    }
+
+    public void MoveFromGridDrag(){
+        foreach(EventPanel evt in eventPanels){
+            evt.eventPoint.UpdateFromGridDrag();
+        }
+        foreach(Interval intv in intervals){
+            intv.UpdateCollider();
+        }
+    }
 
 }
