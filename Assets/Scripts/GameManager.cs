@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using TMPro;
 public class GameManager : MonoBehaviour
 {
 
@@ -24,9 +25,16 @@ public class GameManager : MonoBehaviour
     public GameObject ObjectPanelPrefab;
     public Transform ObjectContentPanel;
     public Camera cam;
+    public TMP_InputField timeInputField;
 
     [HideInInspector] public float transitionProgress = 1;
     [HideInInspector] public float beta;
+    public int highlightedInterval = -1;
+
+    [HideInInspector] public Vector2 oldTime = new Vector3(0,0);
+    [HideInInspector] public Vector2 newTime = new Vector3(0,0);
+
+    Vector2 res;
 
 
     public void AddObject(){
@@ -45,17 +53,23 @@ public class GameManager : MonoBehaviour
     }
 
     void Update(){
+        if(res.x != Screen.width || res.y != Screen.height){
+            UpdateGraph();
+            
+            res = new Vector2(Screen.width, Screen.height);
+        }
+
         if(transitionProgress < 1){
             if(transitionProgress + Time.deltaTime > 1){
                 transitionProgress = 1;
             }
             foreach(ObjectPanel obj in objects){
                 for(int i = 0; i < obj.eventPanels.Count; i++){
-                    Vector2 oldEvent = obj.eventPanels[i].oldEvent;
-                    float betaLerp = beta * transitionProgress;
-                    float gamma = 1f / Mathf.Sqrt(1 - betaLerp * betaLerp);
-                    obj.eventPanels[i].time.text = (gamma * (oldEvent.y - betaLerp * oldEvent.x)).ToString("0.0");
-                    obj.eventPanels[i].position.text = (gamma * (oldEvent.x - betaLerp * oldEvent.y)).ToString("0.0");
+                    Vector2 lerpEvent = obj.eventPanels[i].oldEvent + transitionProgress * (obj.eventPanels[i].newEvent - obj.eventPanels[i].oldEvent);
+                    currentTime = oldTime.y + transitionProgress * (newTime.y - oldTime.y);
+                    timeInputField.text = currentTime.ToString("0.0");
+                    obj.eventPanels[i].time.text = (lerpEvent.y).ToString("0.0");
+                    obj.eventPanels[i].position.text = (lerpEvent.x).ToString("0.0");
                     //Debug.Log("Event Updated (" + oldEvent.x + ", " + oldEvent.y + ") => (" + obj.eventPanels[i].position.text + ", " + obj.eventPanels[i].time.text + ")");
                     obj.eventPanels[i].EventUpdated(false);
                 }
@@ -95,12 +109,26 @@ public class GameManager : MonoBehaviour
             while(j < events.Count && events[j].z == i){
                 j++;
             }
-            objectsIdx[i] = new Vector2Int(firstIdx, j-1);
+            objectsIdx[i] = new Vector2Int(firstIdx, Mathf.Max(firstIdx, j-1));
         }
         
     }
 
     public void UpdateGraph(){
         graph.UpdateGraph();
+    }
+
+    public void AddTime(float step){
+        currentTime += step;
+        timeInputField.text = currentTime.ToString("0.0");
+        UpdateGraph();
+    }
+
+    public void UpdateTimeFromInput(){
+        if(timeInputField.text == ""){
+            timeInputField.text = "0";
+        }
+        currentTime = Convert.ToSingle(timeInputField.text);
+        UpdateGraph();
     }
 }

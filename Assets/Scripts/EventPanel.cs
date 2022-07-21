@@ -11,6 +11,7 @@ public class EventPanel : MonoBehaviour
     public TMP_InputField time;
 
     public Vector2 oldEvent;
+    public Vector2 newEvent;
 
     public ObjectPanel objPanel; 
     public EventPoint eventPoint;

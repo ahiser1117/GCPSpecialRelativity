@@ -25,10 +25,14 @@ public class Interval : MonoBehaviour
 
     void OnMouseEnter(){
         hoverData.SetActive(true);
+        GameManager.instance.highlightedInterval = GameManager.instance.objectsIdx[GameManager.instance.objects.IndexOf(from.eventPanel.objPanel)].x + from.eventPanel.objPanel.eventPanels.IndexOf(from.eventPanel);
+        GameManager.instance.UpdateGraph();
     }
 
     void OnMouseExit(){
         hoverData.SetActive(false);
+        GameManager.instance.highlightedInterval = -1;
+        GameManager.instance.UpdateGraph();
     }
 
     public void UpdateCollider(){

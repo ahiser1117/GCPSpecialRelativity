@@ -127,22 +127,32 @@ public class ObjectPanel : MonoBehaviour
         if(minIdx < eventPanels.Count-1 && Convert.ToSingle(eventPanels[minIdx].time.text) - gm.currentTime <= 0){
             beta = (Convert.ToSingle(eventPanels[minIdx+1].position.text) - Convert.ToSingle(eventPanels[minIdx].position.text)) / 
                     (Convert.ToSingle(eventPanels[minIdx+1].time.text) - Convert.ToSingle(eventPanels[minIdx].time.text));
-        } else if(minIdx > 0 && Convert.ToSingle(eventPanels[minIdx].time.text) - gm.currentTime > 0){
+        } else if(minIdx > 0 && Convert.ToSingle(eventPanels[minIdx].time.text) - gm.currentTime >= 0){
             beta = (Convert.ToSingle(eventPanels[minIdx].position.text) - Convert.ToSingle(eventPanels[minIdx-1].position.text)) / 
                     (Convert.ToSingle(eventPanels[minIdx].time.text) - Convert.ToSingle(eventPanels[minIdx-1].time.text));
+        } else{
+            return;
         }
         if(beta > 1){
-            Debug.Log("Cannot switch to Super-Luminal Reference Frame");
+            Debug.Log("Cannot switch to Superluminal Reference Frame");
             return;
         }
         
+        float gamma = 1f / Mathf.Sqrt(1 - beta * beta);
+
+        Vector2 intersect = new Vector2(Convert.ToSingle(eventPanels[minIdx].position.text) + beta * (gm.currentTime - Convert.ToSingle(eventPanels[minIdx].time.text)), gm.currentTime);
 
         foreach(ObjectPanel obj in gm.objects){
             for(int i = 0; i < obj.eventPanels.Count; i++){
                 obj.eventPanels[i].oldEvent = new Vector2(Convert.ToSingle(obj.eventPanels[i].position.text), Convert.ToSingle(obj.eventPanels[i].time.text));
+                obj.eventPanels[i].newEvent = new Vector2(gamma * (obj.eventPanels[i].oldEvent.x - intersect.x
+                                                            - beta * (obj.eventPanels[i].oldEvent.y - intersect.y)),
+                                                         gamma * (obj.eventPanels[i].oldEvent.y - intersect.y 
+                                                            - beta * (obj.eventPanels[i].oldEvent.x - intersect.x)));
             }
         }
-        gm.beta = beta;
+        gm.oldTime = intersect;
+        gm.newTime = Vector2.zero;
         gm.transitionProgress = 0;
     }
 

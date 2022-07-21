@@ -10,7 +10,8 @@ public class Graph : MonoBehaviour
     public Color minorGridColor;
     public Color majorGridColor;
     public Color invalidWorldLine;
-
+    public Color highlightColor;
+    public Color timeLineColor;
 
     public Vector3Int originOffset;
 
@@ -31,9 +32,10 @@ public class Graph : MonoBehaviour
     int height;
     RenderTexture tex;
     Texture2D result;
+    RectTransform rect;
 
     void Awake(){
-        RectTransform rect = GetComponent<RectTransform>();
+        rect = GetComponent<RectTransform>();
         gm = GameManager.instance;
         width = (int) rect.rect.width;
         height = (int) rect.rect.height;
@@ -52,6 +54,8 @@ public class Graph : MonoBehaviour
     }
 
     public void UpdateGraph(){
+        width = (int) rect.rect.width;
+        height = (int) rect.rect.height;
         eventBuffer.SetData(gm.events);
         objectBuffer.SetData(gm.objectsIdx);
         objColorBuffer.SetData(gm.objectColors);
@@ -61,10 +65,14 @@ public class Graph : MonoBehaviour
         shader.SetInt("_NumObjects", gm.objects.Count);
         shader.SetInt("_xOffset", originOffset.x);
         shader.SetInt("_yOffset", originOffset.y);
+        shader.SetInt("_IntervalIdx", gm.highlightedInterval);
+        shader.SetFloat("_CurrentTime", gm.currentTime);
         shader.SetVector("_BackgroundColor", backgroundColor);
         shader.SetVector("_MinorGridColor", minorGridColor);
         shader.SetVector("_MajorGridColor", majorGridColor);
         shader.SetVector("_InvalidWorldLine", invalidWorldLine);
+        shader.SetVector("_HighlightColor", highlightColor);
+        shader.SetVector("_TimeLineColor", timeLineColor);
         int kernelHandle = shader.FindKernel("RenderGraph");
         if(tex != null){
             Destroy(tex);
@@ -96,10 +104,10 @@ public class Graph : MonoBehaviour
 
     void Update(){
         if(Input.GetMouseButtonDown(1)){
-            mouseInit = gm.cam.ScreenToWorldPoint(Input.mousePosition);
+            mouseInit = Input.mousePosition;
             oldPosition = originOffset;
         } else if(Input.GetMouseButton(1)){
-            originOffset = Vector3Int.CeilToInt(oldPosition + gm.cam.ScreenToWorldPoint(Input.mousePosition) - mouseInit);
+            originOffset = Vector3Int.CeilToInt(oldPosition + Input.mousePosition - mouseInit);
             foreach(ObjectPanel obj in gm.objects){
                 obj.MoveFromGridDrag();
             }
