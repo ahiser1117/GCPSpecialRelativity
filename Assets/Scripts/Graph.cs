@@ -12,6 +12,7 @@ public class Graph : MonoBehaviour
     public Color invalidWorldLine;
     public Color highlightColor;
     public Color timeLineColor;
+    public Color gridDivideColor;
 
     public Vector3Int originOffset;
 
@@ -73,6 +74,7 @@ public class Graph : MonoBehaviour
         shader.SetVector("_InvalidWorldLine", invalidWorldLine);
         shader.SetVector("_HighlightColor", highlightColor);
         shader.SetVector("_TimeLineColor", timeLineColor);
+        shader.SetVector("_GridDivideColor", gridDivideColor);
         int kernelHandle = shader.FindKernel("RenderGraph");
         if(tex != null){
             Destroy(tex);
@@ -97,6 +99,8 @@ public class Graph : MonoBehaviour
         result.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
         result.Apply();
         img.texture = result;
+
+        gm.betaGraph.UpdateGraph();
     }
 
     Vector3 mouseInit;

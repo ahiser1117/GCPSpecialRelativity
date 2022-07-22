@@ -42,6 +42,8 @@ public class Interval : MonoBehaviour
         hoverData.transform.position = transform.position + Vector3.Cross(delta, Vector3.forward).normalized * 100;
         hoverData.GetComponent<RectTransform>().rotation = Quaternion.identity;
         intCollider.size = new Vector2(delta.magnitude-15, intCollider.size.y);
+        delta = GameManager.instance.cam.WorldToScreenPoint(to.transform.position) 
+                - GameManager.instance.cam.WorldToScreenPoint(from.transform.position);
         beta = delta.x / delta.y;
         betaText.text = beta.ToString("0.000");
         float gamma = 1 / Mathf.Sqrt(1 - beta * beta);

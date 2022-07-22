@@ -416,7 +416,6 @@ GameObject:
   - component: {fileID: 4066953115251603214}
   - component: {fileID: 1604358031111101318}
   - component: {fileID: 3229796115444664885}
-  - component: {fileID: -2312791706153884483}
   m_Layer: 0
   m_Name: Interval
   m_TagString: Untagged
@@ -450,7 +449,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -486,21 +485,6 @@ MonoBehaviour:
   delTimeText: {fileID: 7600985794766243054}
   nameText: {fileID: 8189038672537698258}
   beta: 0
---- !u!114 &-2312791706153884483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4066953115251603215}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0.3160377, g: 0.96964335, b: 1, a: 1}
-  m_EffectDistance: {x: 1, y: -1}
-  m_UseGraphicAlpha: 1
 --- !u!1 &4066953116243097969
 GameObject:
   m_ObjectHideFlags: 0
@@ -776,7 +760,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &4066953117138597035
 MonoBehaviour:

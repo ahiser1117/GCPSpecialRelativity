@@ -23,6 +23,7 @@ float4 _MajorGridColor;
 float4 _InvalidWorldLine;
 float4 _HighlightColor;
 float4 _TimeLineColor;
+float4 _GridDivideColor;
 
 void ClearGraph(uint3 id){
     _Result[id.xy] = _BackgroundColor;
@@ -112,6 +113,45 @@ void DrawEvents(uint3 id){
     }
 }
 
+void DrawBetaGraph(uint3 id){
+    int xPos = id.x - _Width/2 - _xOffset;
+    int yPos = id.y - 120;
+
+    if((xPos > 0 && xPos % 25 < _Thickness ||
+        (xPos < 0 && -xPos % 25 < _Thickness))){
+        _Result[id.xy] = _MinorGridColor;
+    }
+
+    // Lighter grid aligned with X-Axis
+    if((yPos > 0 && yPos % 30 < _Thickness) ||
+        (yPos < 0 && -yPos % 30 < _Thickness)){
+        _Result[id.xy] = _MinorGridColor;
+    }
+
+    // X and Y Axies
+    if((xPos > -_Thickness && xPos < _Thickness) || 
+    (yPos > -_Thickness && yPos < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
+    }
+
+    // X-Axis tick marks
+    if((xPos > 0 && (yPos > -10 && yPos < 10) && (xPos) % 100 < _Thickness) ||
+        (xPos < 0 && (yPos > -10 && yPos < 10) && (-xPos) % 100 < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
+    }
+
+    // Y-Axis tick marks
+    if((yPos > 0 && (xPos > -10 && xPos < 10) && (yPos) % 60 < _Thickness) ||
+        (yPos < 0 && (xPos > -10 && xPos < 10) && (-yPos) % 60 < _Thickness)){
+        _Result[id.xy] = _MajorGridColor;
+    }
+
+    if(yPos > 120){
+        _Result[id.xy] = _GridDivideColor;
+    }
+
+}
+
 
 
 [numthreads(8,8,1)]
@@ -119,8 +159,12 @@ void RenderGraph (uint3 id : SV_DispatchThreadID)
 {
     if(id.x < _Width && id.y < _Height){
         ClearGraph(id);
-        BaseGraph(id);
-        DrawEvents(id);
+        if(id.y < 250){
+            DrawBetaGraph(id);
+        } else{
+            BaseGraph(id);
+            DrawEvents(id);
+        }   
     }
     
 

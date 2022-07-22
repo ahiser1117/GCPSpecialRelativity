@@ -32,14 +32,19 @@ public class EventPanel : MonoBehaviour
             
     }
 
-    public void UpdateFromDrag(float pos, float t){
+    public void UpdateFromDrag(float pos, float t, bool update = true){
         position.text = pos.ToString("0.0");
         time.text = t.ToString("0.0");
         gm.events[gm.objectsIdx[gm.objects.IndexOf(objPanel)].x + objPanel.eventPanels.IndexOf(this)] = new Vector3(pos, t, gm.objects.IndexOf(objPanel));
-        objPanel.UpdateObject();
+        if(update)
+            objPanel.UpdateObject();
     }
 
     public void DeleteEvent(int minimum = 1){
+        if(objPanel.eventPanels.Count == minimum){
+            UpdateFromDrag(0,0);
+            objPanel.GenerateIntervals();
+        }
         if(objPanel.eventPanels.Count > minimum){
             gm.events.RemoveAt(gm.objectsIdx[gm.objects.IndexOf(objPanel)].x + objPanel.eventPanels.IndexOf(this));
             objPanel.eventPanels.Remove(this);

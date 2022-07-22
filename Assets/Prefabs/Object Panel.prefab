@@ -1332,14 +1332,14 @@ MonoBehaviour:
       - m_Target: {fileID: 4054156876527203886}
         m_TargetAssemblyTypeName: ObjectPanel, Assembly-CSharp
         m_MethodName: AddEvent
-        m_Mode: 1
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!1 &4211660296443058255
 GameObject:
@@ -1711,6 +1711,7 @@ MonoBehaviour:
   EventPanelPrefab: {fileID: 6855305744070600485, guid: 0bdc711011e5ab04aaeff3b5560d3a7a, type: 3}
   EventPointPrefab: {fileID: 5534908971301400516, guid: f0abceca0911c36488abad4e31ab47c0, type: 3}
   IntervalPrefab: {fileID: 4066953115251603215, guid: bc5b7af66303296488d6ad6a76da0d04, type: 3}
+  colorSelector: {fileID: 6387029617736862715}
   gm: {fileID: 0}
   eventPanels: []
   intervals: []

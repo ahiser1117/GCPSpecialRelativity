@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     public List<Color> objectColors;
     public List<Vector3> events;
     public Graph graph;
+    public BetaGraph betaGraph;
     public GameObject ObjectPanelPrefab;
     public Transform ObjectContentPanel;
     public Camera cam;
@@ -42,9 +43,7 @@ public class GameManager : MonoBehaviour
         objects.Add(newPanel);
         objectsIdx.Add(new Vector2Int(events.Count, events.Count));
         objectColors.Add(newPanel.color);
-        newPanel.gm = this;
-        newPanel.ConfirmName();
-        
+        newPanel.Init();
     }
 
     void Start(){
@@ -54,6 +53,12 @@ public class GameManager : MonoBehaviour
 
     void Update(){
         if(res.x != Screen.width || res.y != Screen.height){
+            foreach(ObjectPanel obj in objects){
+                foreach(EventPanel evt in obj.eventPanels){
+                    evt.eventPoint.UpdateFromGridDrag();
+                }
+                obj.GenerateIntervals();
+            }
             UpdateGraph();
             
             res = new Vector2(Screen.width, Screen.height);
@@ -130,5 +135,72 @@ public class GameManager : MonoBehaviour
         }
         currentTime = Convert.ToSingle(timeInputField.text);
         UpdateGraph();
+    }
+
+    public void SaveToFile(){
+        List<string> objNames = new List<string>();
+        List<Vector4> objColors = new List<Vector4>();
+
+        foreach(ObjectPanel obj in objects){
+            objNames.Add(obj.Name.text);
+            objColors.Add(obj.color);
+        }
+
+        SaveSituation save = new SaveSituation{
+            objectNames = objNames.ToArray(),
+            objectColors = objColors.ToArray(),
+            events = events.ToArray()
+        };
+
+        string json = JsonUtility.ToJson(save);
+        Debug.Log(json);
+
+        SaveManager.SaveToFile(json);
+    }
+
+    public void LoadFromFile(string pathname){
+        string saveString = SaveManager.LoadFromFile(pathname);
+
+        while(objects.Count > 0){
+            objects[0].DeleteObj();
+        }
+
+        if(saveString != null){
+            SaveSituation save = JsonUtility.FromJson<SaveSituation>(saveString);
+
+            for(int i = 0; i < save.objectNames.Length; i++){
+                AddObject();
+            }
+            for(int i = 0; i < save.objectNames.Length; i++){
+                objects[i].Name.text = save.objectNames[i];
+                objects[i].ChangeColor(save.objectColors[i], false);
+            }
+            for(int i = 0; i < save.events.Length; i++){
+                objects[(int) save.events[i].z].eventPanels[objects[(int) save.events[i].z].eventPanels.Count - 1].UpdateFromDrag(save.events[i].x, save.events[i].y, false);
+                objects[(int) save.events[i].z].AddEvent(false);
+            }
+            foreach(ObjectPanel obj in objects){
+                Debug.Log("Object:" + objects.IndexOf(obj) + ", " + obj.eventPanels.Count);
+                obj.eventPanels[obj.eventPanels.Count - 1].DeleteEvent();
+            }
+            for(int i = 0; i < save.events.Length; i++){
+                
+            }
+            foreach(ObjectPanel obj in objects){
+                obj.SortEventPanels();
+                obj.GenerateIntervals();
+            }
+
+        }
+    }
+
+    public void LoadMostRecent(){
+        SaveManager.LoadFiles();
+    }
+
+    public class SaveSituation{
+        public string[] objectNames;
+        public Vector4[] objectColors;
+        public Vector3[] events;
     }
 }

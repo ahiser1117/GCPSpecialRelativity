@@ -14,18 +14,21 @@ public class ObjectPanel : MonoBehaviour
     public GameObject EventPanelPrefab;
     public GameObject EventPointPrefab;
     public GameObject IntervalPrefab;
+    public Image colorSelector;
 
     [HideInInspector] public GameManager gm;
 
     public List<EventPanel> eventPanels;
     public List<Interval> intervals;
 
-    void Start(){
+    public void Init(){
         eventPanels = new List<EventPanel>();
         gm = GameManager.instance;
+        ConfirmName();
+        AddEvent();
     }
 
-    public void AddEvent(){
+    public void AddEvent(bool update = true){
         EventPanel newEventPanel = Instantiate(EventPanelPrefab, Vector3.zero, Quaternion.identity, EventContentPanel).GetComponent<EventPanel>();
         EventPoint newEventPoint = Instantiate(EventPointPrefab, Vector3.zero, Quaternion.identity).GetComponent<EventPoint>();
         eventPanels.Add(newEventPanel);
@@ -41,7 +44,8 @@ public class ObjectPanel : MonoBehaviour
         else
             gm.events.Insert(gm.objectsIdx[gm.objects.IndexOf(this)].y, new Vector3(0, 0, gm.objects.IndexOf(this)));
         gm.FindObjectsIdx();
-        newEventPanel.EventUpdated(); // Update Objects event list
+        if(update)
+            newEventPanel.EventUpdated(); // Update Objects event list
     }
 
     public void ConfirmName(){
@@ -88,6 +92,7 @@ public class ObjectPanel : MonoBehaviour
         for(int i = 0; eventPanels.Count > 1 && i < eventPanels.Count-1; i++){
             Interval newInterval = Instantiate(IntervalPrefab, Vector3.zero, Quaternion.identity).GetComponent<Interval>();
             intervals.Add(newInterval);
+            newInterval.hoverData.GetComponent<Canvas>().worldCamera = gm.cam;
             newInterval.from = eventPanels[i].eventPoint;
             newInterval.to = eventPanels[i+1].eventPoint;
             newInterval.UpdateCollider();
@@ -156,13 +161,15 @@ public class ObjectPanel : MonoBehaviour
         gm.transitionProgress = 0;
     }
 
-    public void ChangeColor(Color newColor){
+    public void ChangeColor(Color newColor, bool update = true){
         color = newColor;
+        colorSelector.color = newColor;
         gm.objectColors[gm.objects.IndexOf(this)] = color;
         foreach(EventPanel evt in eventPanels){
             evt.eventPoint.GetComponent<SpriteRenderer>().color = color;
         }
-        gm.UpdateGraph();
+        if(update)
+            gm.UpdateGraph();
     }
 
     public void MoveFromGridDrag(){
