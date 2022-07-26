@@ -101,6 +101,9 @@ public class Graph : MonoBehaviour
         img.texture = result;
 
         gm.betaGraph.UpdateGraph();
+        foreach(AxisLabel label in gm.axisLabels){
+            label.UpdatePosition();
+        }
     }
 
     Vector3 mouseInit;

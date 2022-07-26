@@ -19,6 +19,7 @@ public class EventPoint : MonoBehaviour
     void OnMouseDown(){
         mouseOnDrag = Input.mousePosition;
         onDragPosition = transform.position;
+        GameManager.instance.highlightedInterval = -1;
         isDragged = true;
     }
 

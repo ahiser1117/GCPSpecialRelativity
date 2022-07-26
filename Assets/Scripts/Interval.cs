@@ -39,15 +39,15 @@ public class Interval : MonoBehaviour
         Vector3 delta = (to.transform.position - from.transform.position);
         transform.position = from.transform.position + delta / 2;
         transform.rotation = Quaternion.FromToRotation(Vector3.right, delta);
-        hoverData.transform.position = transform.position + Vector3.Cross(delta, Vector3.forward).normalized * 100;
+        hoverData.transform.position = transform.position + Vector3.Cross(delta, Vector3.forward).normalized * 150;
         hoverData.GetComponent<RectTransform>().rotation = Quaternion.identity;
         intCollider.size = new Vector2(delta.magnitude-15, intCollider.size.y);
         delta = GameManager.instance.cam.WorldToScreenPoint(to.transform.position) 
                 - GameManager.instance.cam.WorldToScreenPoint(from.transform.position);
         beta = delta.x / delta.y;
-        betaText.text = beta.ToString("0.000");
+        betaText.text = "β: " + beta.ToString("0.000");
         float gamma = 1 / Mathf.Sqrt(1 - beta * beta);
-        delTimeText.text = (gamma * (delta.y - beta * delta.x)).ToString("0.0") + "s";
+        delTimeText.text = "Δτ:" + (gamma * (delta.y - beta * delta.x)).ToString("0.0") + "s";
     }
 
 

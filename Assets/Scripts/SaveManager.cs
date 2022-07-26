@@ -2,11 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using TMPro;
 
 public class SaveManager : MonoBehaviour
 {
 
     public static string SPACE_TIME_FOLDER;
+
+    public Transform loadMenuContent;
 
     void Start(){
         SPACE_TIME_FOLDER = Application.dataPath + "/Saves/";
@@ -18,13 +21,13 @@ public class SaveManager : MonoBehaviour
     // Create the file and write all contents of current situation
     public static void SaveToFile(string saveString){
         int saveNumber = 1;
-        if(!File.Exists(SPACE_TIME_FOLDER + "Untitled" + ".spacetime")){
-            File.WriteAllText(SPACE_TIME_FOLDER + "Untitled" + ".spacetime", saveString);
+        if(!File.Exists(SPACE_TIME_FOLDER + GameManager.instance.saveName.text + ".spacetime")){
+            File.WriteAllText(SPACE_TIME_FOLDER + GameManager.instance.saveName.text + ".spacetime", saveString);
         } else{
-            while(File.Exists(SPACE_TIME_FOLDER + "Untitled" + "_(" + saveNumber + ").spacetime")){
+            while(File.Exists(SPACE_TIME_FOLDER + GameManager.instance.saveName.text + "_(" + saveNumber + ").spacetime")){
                 saveNumber++;
             }
-            File.WriteAllText(SPACE_TIME_FOLDER + "Untitled" + "_(" + saveNumber + ").spacetime", saveString);
+            File.WriteAllText(SPACE_TIME_FOLDER + GameManager.instance.saveName.text + "_(" + saveNumber + ").spacetime", saveString);
         }
 
     }
@@ -34,17 +37,14 @@ public class SaveManager : MonoBehaviour
     public static void LoadFiles(){
         DirectoryInfo directoryInfo = new DirectoryInfo(SPACE_TIME_FOLDER);
         FileInfo[] saveFiles = directoryInfo.GetFiles("*.spacetime");
-        System.DateTime mostRecent = saveFiles[0].CreationTime;
-        int mostRecentIdx = 0;
-        foreach(FileInfo fileInfo in saveFiles){
-            Debug.Log("Found: " + fileInfo.Name);
-            if(mostRecent.CompareTo(fileInfo.CreationTime) < 0){
-                mostRecent = fileInfo.CreationTime;
-                mostRecentIdx = System.Array.IndexOf(saveFiles, fileInfo);
-            }
+        foreach(Transform child in GameManager.instance.loadMenuContent){
+            Destroy(child.gameObject);
         }
-        if(saveFiles[mostRecentIdx].FullName != null)
-            GameManager.instance.LoadFromFile(saveFiles[mostRecentIdx].FullName);
+        foreach(FileInfo fileInfo in saveFiles){
+            LoadFileButton newButton = Instantiate(GameManager.instance.loadFileButtonPrefab, Vector3.zero, Quaternion.identity, GameManager.instance.loadMenuContent).GetComponent<LoadFileButton>();
+            newButton.pathname = fileInfo.FullName;
+            newButton.GetComponentInChildren<TMP_Text>().text = fileInfo.Name.Substring(0, fileInfo.Name.Length - 10);
+        }
     }
 
     public static string LoadFromFile(string pathname){

@@ -10,6 +10,8 @@ public class EventPanel : MonoBehaviour
     public TMP_InputField position;
     public TMP_InputField time;
 
+    public Vector2 currEvent;
+
     public Vector2 oldEvent;
     public Vector2 newEvent;
 
@@ -24,7 +26,8 @@ public class EventPanel : MonoBehaviour
 
     public void EventUpdated(bool updateObj = true){
         gm.events[gm.objectsIdx[gm.objects.IndexOf(objPanel)].x + objPanel.eventPanels.IndexOf(this)] = new Vector3(Convert.ToSingle(position.text), Convert.ToSingle(time.text), gm.objects.IndexOf(objPanel));
-        eventPoint.UpdateFromInput(Convert.ToSingle(position.text), Convert.ToSingle(time.text));
+        currEvent = new Vector2(Convert.ToSingle(position.text), Convert.ToSingle(time.text));
+        eventPoint.UpdateFromInput(currEvent.x, currEvent.y);
         if(updateObj){
             objPanel.UpdateObject();
             objPanel.GenerateIntervals();
@@ -33,6 +36,7 @@ public class EventPanel : MonoBehaviour
     }
 
     public void UpdateFromDrag(float pos, float t, bool update = true){
+        currEvent = new Vector2(pos, t);
         position.text = pos.ToString("0.0");
         time.text = t.ToString("0.0");
         gm.events[gm.objectsIdx[gm.objects.IndexOf(objPanel)].x + objPanel.eventPanels.IndexOf(this)] = new Vector3(pos, t, gm.objects.IndexOf(objPanel));
@@ -54,6 +58,10 @@ public class EventPanel : MonoBehaviour
             Destroy(eventPoint.gameObject);
             Destroy(this.gameObject);
         }
+    }
+
+    public void ChangeSelected(Tabbable newSelect){
+        gm.ChangeSelected(newSelect);
     }
 
 

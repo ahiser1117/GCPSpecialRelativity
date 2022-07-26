@@ -14,4 +14,8 @@ public class ColorSelector : MonoBehaviour
         colorSelectorMenu.SetActive(false);
         objPanel.ChangeColor(GetComponent<Image>().color);
     }
+
+    public void Toggle(){
+        colorSelectorMenu.SetActive(!colorSelectorMenu.activeSelf);
+    }
 }
